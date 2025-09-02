@@ -1,0 +1,166 @@
+{
+  "info": {
+    "name": "PG-Life API",
+    "_postman_id": "pg-life-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Signup",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{API_URL}}/api/auth/signup",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Test\", \"email\": \"test@example.com\", \"password\": \"secret123\", \"role\": \"seeker\"}"
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{API_URL}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"seeker1@example.com\", \"password\": \"seeker123\"}"
+        }
+      }
+    },
+    {
+      "name": "Me",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          }
+        ],
+        "url": "{{API_URL}}/api/auth/me"
+      }
+    },
+    {
+      "name": "Search Listings",
+      "request": {
+        "method": "GET",
+        "url": "{{API_URL}}/api/listings?city=Lucknow&minPrice=3000&maxPrice=10000&amenities=wifi,laundry"
+      }
+    },
+    {
+      "name": "Create Listing (Owner)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          }
+        ],
+        "url": "{{API_URL}}/api/listings",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Owner List\", \"description\": \"desc\", \"city\": \"Lucknow\", \"address\": \"Somewhere\", \"genderPolicy\": \"any\", \"price\": 5000, \"amenities\": [\"wifi\", \"food\"], \"images\": []}"
+        }
+      }
+    },
+    {
+      "name": "Favorites - Add",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          }
+        ],
+        "url": "{{API_URL}}/api/favorites/{{LISTING_ID}}"
+      }
+    },
+    {
+      "name": "Bookings - Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          }
+        ],
+        "url": "{{API_URL}}/api/bookings",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"listingId\": \"{{LISTING_ID}}\"}"
+        }
+      }
+    },
+    {
+      "name": "Reviews - Add",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          }
+        ],
+        "url": "{{API_URL}}/api/reviews",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"listingId\": \"{{LISTING_ID}}\", \"rating\": 5, \"comment\": \"Great!\"}"
+        }
+      }
+    },
+    {
+      "name": "Recommendations - For Me",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          }
+        ],
+        "url": "{{API_URL}}/api/recommendations/me"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "API_URL",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "TOKEN",
+      "value": ""
+    },
+    {
+      "key": "LISTING_ID",
+      "value": ""
+    }
+  ]
+}
