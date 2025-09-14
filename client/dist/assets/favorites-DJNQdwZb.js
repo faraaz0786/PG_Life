@@ -1,0 +1,1 @@
+import{a as t}from"./index-CUPUJmJk.js";const i=async()=>{const{data:a}=await t.get("/api/favorites/me");return Array.isArray(a)?a:a.items||[]},o=async a=>{const{data:r}=await t.post(`/api/favorites/${a}`);return r};export{o as a,i as m};

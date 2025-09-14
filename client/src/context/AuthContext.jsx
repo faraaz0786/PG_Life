@@ -1,27 +1,43 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import api from '../services/api'
 
-const AuthCtx = createContext(null)
+const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(()=> {
-    const raw = localStorage.getItem('pg_user')
-    return raw ? JSON.parse(raw) : null
-  })
-  const [token, setToken] = useState(()=> localStorage.getItem('pg_token') || '')
+  const [user, setUser] = useState(null)
+  const [authReady, setAuthReady] = useState(false)
 
-  useEffect(()=>{
-    if (user) localStorage.setItem('pg_user', JSON.stringify(user))
-    else localStorage.removeItem('pg_user')
-  }, [user])
-  useEffect(()=>{
-    if (token) localStorage.setItem('pg_token', token)
-    else localStorage.removeItem('pg_token')
-  }, [token])
+  // Bootstrap from token on first load
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setAuthReady(true)
+      return
+    }
+    api.get('/api/auth/me')
+      .then(({ data }) => setUser(data))
+      .catch(() => {
+        localStorage.removeItem('token')
+        setUser(null)
+      })
+      .finally(() => setAuthReady(true))
+  }, [])
 
-  const login = (u,t) => { setUser(u); setToken(t) }
-  const logout = () => { setUser(null); setToken('') }
+  const login = ({ token, user: u }) => {
+    localStorage.setItem('token', token)
+    setUser(u)
+  }
 
-  return <AuthCtx.Provider value={{ user, token, login, logout }}>{children}</AuthCtx.Provider>
+  const logout = () => {
+    localStorage.removeItem('token')
+    setUser(null)
+  }
+
+  return (
+    <AuthContext.Provider value={{ user, setUser, login, logout, authReady }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
-export const useAuth = () => useContext(AuthCtx)
+export const useAuth = () => useContext(AuthContext)

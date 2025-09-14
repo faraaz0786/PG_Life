@@ -1,0 +1,14 @@
+{
+    "name": "PG-Life",
+    "short_name": "PG-Life",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0b1220",
+    "theme_color": "#0b1220",
+    "description": "Find, compare, and book PGs across Indian cities.",
+    "icons": [
+      { "src": "/pg-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+      { "src": "/pg-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    ]
+  }
+  

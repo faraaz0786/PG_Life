@@ -1,13 +1,155 @@
+@import 'leaflet/dist/leaflet.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light dark;
+/* Base */
+html, body, #root { height: 100%; }
+body {
+  @apply font-sans antialiased text-slate-800 bg-gray-50
+         dark:text-slate-100 dark:bg-slate-950;
 }
 
-.container-max { @apply max-w-7xl mx-auto px-4; }
-.card { @apply rounded-2xl shadow-sm bg-white border border-gray-100; }
-.btn { @apply inline-flex items-center justify-center px-4 py-2 rounded-xl font-medium border border-gray-200 bg-white hover:bg-gray-50; }
-.btn-primary { @apply bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700; }
-.input { @apply w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500; }
+/* Accessibility: visible keyboard focus */
+:focus-visible {
+  outline: 2px solid theme('colors.indigo.500');
+  outline-offset: 2px;
+}
+
+/* Layout helpers */
+.container-max { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; }
+.section { @apply py-10 md:py-14; }
+
+/* Primitives (modernized) */
+.card {
+  /* glassy card with subtle border + blur */
+  @apply rounded-2xl bg-white/90 dark:bg-slate-900/80
+         border border-slate-200/60 dark:border-slate-800/60
+         backdrop-blur-sm shadow-sm transition;
+}
+
+.input {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm
+         placeholder-slate-400
+         focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400
+         dark:bg-slate-900/60 dark:border-slate-700 dark:placeholder-slate-500;
+}
+.textarea { @apply input; }
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2
+         text-sm font-semibold transition shadow-soft
+         border border-slate-200 bg-slate-100 text-slate-900
+         hover:bg-slate-200
+         dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100
+         dark:hover:bg-slate-700;
+}
+.btn-primary { @apply bg-brand-600 text-white border-brand-600 hover:bg-brand-700; }
+.btn-ghost   { @apply border-transparent bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800; }
+
+.badge {
+  /* rounded-full chips to match cards */
+  @apply inline-flex items-center gap-1 rounded-full px-3 py-1
+         bg-slate-100 text-slate-700 text-xs font-medium
+         dark:bg-slate-800 dark:text-slate-200;
+}
+
+/* Used by ListingCard/CityCard price badges (top-left) */
+.price-badge {
+  @apply absolute left-2 top-2 z-10 rounded-xl
+         bg-white/90 dark:bg-slate-900/70 backdrop-blur
+         px-2 py-1 text-xs font-semibold
+         text-slate-900 dark:text-slate-100 shadow-soft;
+}
+
+/* Hero background */
+.hero {
+  background-image:
+    radial-gradient(1200px 500px at 50% -50%, rgba(79,70,229,0.20), transparent),
+    linear-gradient(to bottom, #ffffff, #f8fafc);
+}
+.dark .hero {
+  background-image:
+    radial-gradient(1200px 500px at 50% -50%, rgba(79,70,229,0.12), transparent),
+    linear-gradient(to bottom, #0b1220, #0b1220);
+}
+
+/* Skeleton */
+.skeleton { @apply animate-pulse bg-slate-200 rounded-xl dark:bg-slate-800; }
+
+/* Utility tweak: consistent form heights */
+.input { min-height: 42px; }
+.btn   { min-height: 42px; }
+
+.card:hover { @apply shadow-md; }
+
+/* Leaflet premium marker pills */
+.leaflet-price {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #4f46e5;           /* indigo-600 */
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 9999px;
+  box-shadow: 0 4px 10px rgba(79,70,229,0.25);
+  transform: translate(-50%, -50%);
+  position: relative;
+  left: 50%;
+  top: 50%;
+  white-space: nowrap;
+}
+.leaflet-price::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: #4f46e5 transparent transparent transparent;
+  filter: drop-shadow(0 2px 3px rgba(79,70,229,0.25));
+}
+
+/* Map UI controls */
+.map-ctl {
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(203,213,225,0.6); /* slate-200/60 */
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 6px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.dark .map-ctl {
+  background: rgba(2,6,23,0.8);  /* slate-950/80 */
+  border-color: rgba(30,41,59,0.6);
+}
+.map-btn {
+  font: 600 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+  padding: 6px 10px;
+  border-radius: 10px;
+  color: #0f172a;                /* slate-900 */
+  background: rgba(241,245,249,0.9); /* slate-100 */
+  border: 1px solid rgba(203,213,225,0.6);
+  cursor: pointer;
+}
+.map-btn:hover { background: rgba(226,232,240,0.9); }
+.dark .map-btn {
+  color: #e5e7eb;                /* slate-200 */
+  background: rgba(30,41,59,0.7); /* slate-800 */
+  border-color: rgba(30,41,59,0.6);
+}
+.map-btn--active {
+  background: #4f46e5; color: #fff; border-color: #4f46e5;
+}
+
+.card:hover { @apply shadow-md; }
+
+/* Softer card shadow for premium look */
+.shadow-xl { box-shadow: 0 10px 35px 0 rgba(15, 23, 42, 0.25); }
+
+/* kbd styling for the Tip hint */
+kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }

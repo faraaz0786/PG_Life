@@ -2,11 +2,93 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PG-Life</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+
+    <title>PG-Life — Find your perfect PG</title>
+
+    <!-- Basic SEO -->
+    <meta
+      name="description"
+      content="PG-Life — Find, compare, and book PGs across Indian cities. Filter by city, budget, amenities & gender policy; save favorites and request visits."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="http://localhost:5173/" />
+
+    <!-- Open Graph (social share) -->
+    <meta property="og:title" content="PG-Life — Find your perfect PG" />
+    <meta
+      property="og:description"
+      content="Search by city & budget, compare amenities, save favorites and book visits."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://localhost:5173/" />
+    <meta property="og:image" content="/og-cover.png" />
+    <meta property="og:site_name" content="PG-Life" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PG-Life — Find your perfect PG" />
+    <meta
+      name="twitter:description"
+      content="Search by city & budget, compare amenities, save favorites and book visits."
+    />
+    <meta name="twitter:image" content="/og-cover.png" />
+
+    <!-- Theming: light/dark -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)" />
+
+    <!-- PWA basics -->
+    <!-- <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" /> -->
+
+    <!-- Networking hints -->
+    <link rel="dns-prefetch" href="//localhost" />
+    <link rel="preconnect" href="http://localhost:5000" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Fonts (display swap to avoid FOIT) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Set theme before first paint -->
+    <script>
+      (function () {
+        const stored = localStorage.getItem('theme');
+        const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const dark = stored ? stored === 'dark' : prefers;
+        if (dark) document.documentElement.classList.add('dark');
+      })();
+    </script>
+
+    <!-- Optional: prevent iOS auto-detect phone numbers -->
+    <meta name="format-detection" content="telephone=no" />
   </head>
-  <body class="bg-gray-50">
+
+  <body class="bg-gray-50 dark:bg-slate-950 antialiased">
+    <noscript>
+      <div style="padding:12px; text-align:center; background:#111; color:#fff">
+        PG-Life works best with JavaScript enabled.
+      </div>
+    </noscript>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+
+
+<meta name="description" content="Find verified PGs across India. Filter by budget, gender policy, amenities, and book a visit in minutes." />
+<meta property="og:title" content="PG-Life — Find Your Perfect PG" />
+<meta property="og:description" content="Discover verified PGs with transparent pricing and amenities." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="https://your-frontend.com/og-card.jpg" />
+<link rel="icon" href="/favicon.ico" />
