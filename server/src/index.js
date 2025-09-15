@@ -24,44 +24,49 @@ const { notFound, errorHandler } = require('./middleware/error');
 
 const app = express();
 
-/* ---------- Core app hardening ---------- */
-app.set('trust proxy', 1);            // needed on Render/behind proxies
+/* ---------- Core hardening ---------- */
+app.set('trust proxy', 1);          // required behind Render/other proxies
 app.disable('x-powered-by');
 
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
 app.use(morgan('dev'));
 
-// --- CORS (safe allowlist + per-request options) ---
-const allowList = new Set(
-  (process.env.CORS_ORIGIN || 'http://localhost:5173')
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean)
+/* ---------- CORS (allowlist + credentials) ---------- */
+// Read comma-separated origins from env and ensure localhost is present for dev.
+const allowed = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+// Always keep localhost for your own testing
+if (!allowed.includes('http://localhost:5173')) {
+  allowed.push('http://localhost:5173');
+}
+
+console.log('CORS allowlist:', allowed);
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow server-to-server, curl/Postman (no Origin)
+      if (!origin) return cb(null, true);
+      return allowed.includes(origin)
+        ? cb(null, true)
+        : cb(new Error(`CORS blocked for origin: ${origin}`), false);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Set-Cookie'],
+  })
 );
 
-const corsOptionsDelegate = function (req, callback) {
-  const origin = req.header('Origin');
-  // allow server-to-server, curl/Postman (no Origin), and allowed FE origins
-  if (!origin || allowList.has(origin)) {
-    callback(null, {
-      origin: true,
-      credentials: true,
-      methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-      allowedHeaders: ['Content-Type','Authorization','X-Requested-With','Accept'],
-    });
-  } else {
-    // Do NOT throw — just disable CORS for this request
-    callback(null, { origin: false });
-  }
-};
+// Preflight
+app.options('*', cors());
 
-app.use(cors(corsOptionsDelegate));
-// respond to preflight for all routes
-app.options('*', cors(corsOptionsDelegate));
-
-/* ---------- Helmet (API-friendly) ---------- */
-// For an API (no HTML pages), keep CSP off to avoid surprises.
+/* ---------- Helmet (API-friendly defaults) ---------- */
+// We’re an API (no HTML pages), so keep CSP off to avoid blocking clients.
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
@@ -93,12 +98,12 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Apply general limiter to /api/* EXCEPT /api/auth/*
+// Apply general limiter to /api/* except /api/auth/*
 app.use('/api', (req, res, next) => {
   if (req.path.startsWith('/auth')) return next();
   return apiLimiter(req, res, next);
 });
-// Stricter limiter specifically for /api/auth/*
+// Stricter limiter for auth routes
 app.use('/api/auth', authLimiter);
 
 /* ---------- Routes ---------- */
@@ -114,15 +119,15 @@ app.use('/api/recommendations', recRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-/* ---------- Boot (after DB connects) ---------- */
+/* ---------- Boot ---------- */
 const PORT = process.env.PORT || 5000;
 
 (async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
-      console.log(`API running on http://localhost:${PORT}`);
-    });
+    app.listen(PORT, () =>
+      console.log(`API running on http://localhost:${PORT}`)
+    );
   } catch (err) {
     console.error('❌ Failed to start server:', err);
     process.exit(1);

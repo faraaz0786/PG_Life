@@ -6,9 +6,11 @@ const User = require('../models/User');
 const asyncHandler = require('../utils/asyncHandler');
 const { sendMail } = require('../utils/mailer');       // email helper (configure in utils/mailer.js)
 
-// ---------- helpers ----------
+/* ---------------- helpers ---------------- */
 const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+  jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  });
 
 const cookieOpts = {
   httpOnly: true,
@@ -25,7 +27,7 @@ const cookieOpts = {
 
 const normEmail = (email) => String(email || '').trim().toLowerCase();
 
-// ---------- SIGNUP ----------
+/* ---------------- SIGNUP ---------------- */
 exports.signup = asyncHandler(async (req, res) => {
   const { name, email, password, role, preferences } = req.body || {};
   if (!name || !email || !password || !role) {
@@ -51,9 +53,7 @@ exports.signup = asyncHandler(async (req, res) => {
   });
 
   const token = signToken(user._id);
-
-  // Set auth cookie (cross-site)
-  res.cookie('token', token, cookieOpts);
+  res.cookie('token', token, cookieOpts); // set cross-site auth cookie
 
   return res.status(201).json({
     token,
@@ -67,7 +67,7 @@ exports.signup = asyncHandler(async (req, res) => {
   });
 });
 
-// ---------- LOGIN ----------
+/* ---------------- LOGIN ---------------- */
 exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body || {};
   const emailNorm = normEmail(email);
@@ -79,8 +79,6 @@ exports.login = asyncHandler(async (req, res) => {
   if (!match) return res.status(400).json({ message: 'Invalid credentials' });
 
   const token = signToken(user._id);
-
-  // Set auth cookie (cross-site)
   res.cookie('token', token, cookieOpts);
 
   return res.json({
@@ -96,9 +94,8 @@ exports.login = asyncHandler(async (req, res) => {
   });
 });
 
-// ---------- LOGOUT ----------
+/* ---------------- LOGOUT ---------------- */
 exports.logout = asyncHandler(async (req, res) => {
-  // Clear cookie (mirror options used to set it)
   res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -108,13 +105,12 @@ exports.logout = asyncHandler(async (req, res) => {
   return res.json({ message: 'Logged out' });
 });
 
-// ---------- ME ----------
+/* ---------------- ME ---------------- */
 exports.me = asyncHandler(async (req, res) => {
-  // protect middleware should attach req.user
   return res.json(req.user);
 });
 
-// ---------- FORGOT PASSWORD ----------
+/* ------------- FORGOT PASSWORD ------------- */
 exports.forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body || {};
   if (!email) return res.status(400).json({ message: 'Email is required' });
@@ -122,45 +118,73 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
   const emailNorm = normEmail(email);
   const user = await User.findOne({ email: emailNorm });
 
-  // Always 200 (avoid enumeration)
-  if (user) {
-    const token = crypto.randomBytes(32).toString('hex');
-    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  // Always pretend success if user not found (avoid email enumeration)
+  if (!user) {
+    return res.json({ message: 'If that email exists, a reset link has been sent.' });
+  }
 
-    user.resetPasswordToken = tokenHash;
-    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-    await user.save();
+  // Create one-time token and store its hash + expiry
+  const token = crypto.randomBytes(32).toString('hex'); // RAW token (not JWT)
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
-    const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
-    const resetLink = `${clientUrl}/reset/${token}`;
+  user.resetPasswordToken = tokenHash;
+  user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1h
+  await user.save();
 
-    const html = `
-      <div style="font-family:system-ui,Segoe UI,Roboto,Arial">
-        <h2>Reset your PG-Life password</h2>
-        <p>We received a request to reset your password. Click the button below:</p>
-        <p><a href="${resetLink}" style="display:inline-block;padding:10px 16px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none">Reset Password</a></p>
-        <p>Or copy this link:<br><a href="${resetLink}">${resetLink}</a></p>
-        <p style="color:#64748b">If you didn’t request this, you can ignore this email.</p>
-      </div>
-    `;
+  // Compose reset link for email
+  const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
+  const resetLink = `${clientUrl}/reset/${token}`;
+
+  // Send email if SMTP configured
+  try {
     await sendMail({
       to: user.email,
       subject: 'PG-Life — Reset your password',
-      html,
+      html: `
+        <div style="font-family:system-ui,Segoe UI,Roboto,Arial">
+          <h2>Reset your PG-Life password</h2>
+          <p>Click the button below to reset your password. This link expires in 1 hour.</p>
+          <p><a href="${resetLink}" style="display:inline-block;padding:10px 16px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none">Reset Password</a></p>
+          <p>Or copy this link:<br><a href="${resetLink}">${resetLink}</a></p>
+          <p style="color:#64748b">If you didn’t request this, ignore this email.</p>
+        </div>
+      `,
       text: `Reset link: ${resetLink}`,
+    });
+  } catch (e) {
+    console.warn('sendMail failed (dev ok):', e.message);
+  }
+
+  // DEV ONLY: explicitly surface token if toggled ON
+  // You can use either env:
+  // - DEBUG_RESET_TOKEN=1
+  // - DEV_RESET_TOKEN_RESPONSE=true
+  const debug =
+    process.env.DEBUG_RESET_TOKEN === '1' ||
+    process.env.DEV_RESET_TOKEN_RESPONSE === 'true' ||
+    process.env.NODE_ENV !== 'production';
+
+  if (debug) {
+    console.log('🔑 DEV reset token (raw):', token);
+    return res.json({
+      message: 'Reset link created (DEV). Use token with /api/auth/reset-password within 1 hour.',
+      token,
+      expiresAt: user.resetPasswordExpires,
     });
   }
 
+  // Production default
   return res.json({ message: 'If that email exists, a reset link has been sent.' });
 });
 
-// ---------- RESET PASSWORD ----------
+/* -------------- RESET PASSWORD -------------- */
 exports.resetPassword = asyncHandler(async (req, res) => {
   const { token, password } = req.body || {};
   if (!token || !password) {
     return res.status(400).json({ message: 'Token and new password are required' });
   }
 
+  // Hash the incoming raw token and match what we stored
   const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
   const user = await User.findOne({
@@ -168,7 +192,9 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     resetPasswordExpires: { $gt: new Date() },
   }).select('+resetPasswordToken +resetPasswordExpires');
 
-  if (!user) return res.status(400).json({ message: 'Invalid or expired reset token' });
+  if (!user) {
+    return res.status(400).json({ message: 'Invalid or expired reset token' });
+  }
 
   user.passwordHash = await bcrypt.hash(String(password), 10);
   user.resetPasswordToken = undefined;
