@@ -1,1 +1,0 @@
-import{a as t}from"./index-CUPUJmJk.js";const p=async a=>{const{data:s}=await t.post("/api/auth/forgot-password",{email:a});return s},n=async({token:a,password:s})=>{const{data:o}=await t.post("/api/auth/reset-password",{token:a,password:s});return o};export{p as f,n as r};
