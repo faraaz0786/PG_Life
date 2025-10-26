@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "npm ls framer-motion || true",
     "dev": "vite",
-    "build": "node ./node_modules/vite/bin/vite.js build",
-    "preview": "node ./node_modules/vite/bin/vite.js preview --port 5173"
+    "build": "vite build",
+    "preview": "vite preview --port 5173"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
