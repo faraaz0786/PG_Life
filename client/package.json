@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "npm ls framer-motion || true",
+    "postinstall": "node -e \"console.log('framer-motion version:', require('./node_modules/framer-motion/package.json').version)\"",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --port 5173"
