@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "preinstall": "npm pkg set dependencies.framer-motion=npm:framer-motion@10.16.4",
     "postinstall": "node -e \"console.log('framer-motion version:', require('./node_modules/framer-motion/package.json').version)\"",
     "dev": "vite",
     "build": "vite build",
@@ -17,7 +18,7 @@
     "axios": "^1.7.2",
     "clsx": "^2.1.1",
     "firebase": "^12.4.0",
-    "framer-motion": "10.16.4",
+    "framer-motion": "npm:framer-motion@10.16.4",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.542.0",
     "react": "^18.2.0",
@@ -26,9 +27,6 @@
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.26.1",
     "tailwind-merge": "^3.3.1"
-  },
-  "overrides": {
-    "framer-motion": "10.16.4"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
