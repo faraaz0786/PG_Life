@@ -1,6 +1,8 @@
 /* eslint-disable react/prop-types */
 import { Link } from 'react-router-dom'
-import { MapPin, IndianRupee, Star } from 'lucide-react'
+import { MapPin, IndianRupee, Star, Heart } from 'lucide-react'
+import { motion } from 'framer-motion'
+import * as Tooltip from '@radix-ui/react-tooltip' // ✅ Tooltip import
 
 // Tiny local image component so we don't depend on any other files
 function Img({ src, alt = '', className = '' }) {
@@ -22,7 +24,7 @@ function formatINR(n) {
   try {
     return num.toLocaleString('en-IN')
   } catch {
-    return String(num)
+    return String(n)
   }
 }
 
@@ -50,26 +52,34 @@ export default function ListingCard({ item = {} }) {
     (Array.isArray(images) && images[0]) ||
     'https://images.unsplash.com/photo-1505691723518-36a5ac3b2d52?q=80&w=1200&auto=format&fit=crop'
 
-  // Real items go to detail page; demo items jump to search for that city
   const detailUrl = isDemo ? `/search?city=${encodeURIComponent(city)}` : `/listing/${_id}`
-
-  // Show a few amenities as chips
   const amenPreview = Array.isArray(amenities) ? amenities.slice(0, 3) : []
 
+  const handleFavorite = () => {
+    console.log('Added to favorites:', title)
+    // Later replace this with your actual favorite API or context logic
+  }
+
   return (
-    <div className="group relative overflow-hidden card transition hover:shadow-lg" data-id={_id}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -6, scale: 1.01 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="relative bg-surface rounded-2xl shadow-soft hover:shadow-card overflow-hidden group transition-all"
+      data-id={_id}
+    >
       {/* Cover image */}
       <Link to={detailUrl} aria-label={`Open ${title}`}>
         <div className="relative h-44 w-full overflow-hidden">
-          <Img
-            src={img}
-            alt={title}
-            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-          />
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: 'spring', stiffness: 200 }}>
+            <Img src={img} alt={title} className="h-full w-full object-cover" />
+          </motion.div>
 
           {/* Price badge */}
           {price !== undefined && price !== null && (
-            <div className="absolute left-2 top-2 z-10 rounded-xl bg-white/90 dark:bg-slate-900/70 backdrop-blur px-2 py-1 text-xs font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1">
+            <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-xl bg-white/90 dark:bg-slate-900/70 backdrop-blur px-2 py-1 text-xs font-semibold text-slate-900 dark:text-slate-100">
               <IndianRupee size={14} />
               {formatINR(price)}
             </div>
@@ -77,10 +87,12 @@ export default function ListingCard({ item = {} }) {
 
           {/* Rating badge */}
           {ratingAvg !== undefined && ratingAvg !== null && (
-            <div className="absolute right-2 top-2 z-10 rounded-xl bg-black/70 text-white px-2 py-1 text-xs font-semibold flex items-center gap-1">
+            <div className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-xl bg-black/70 text-white px-2 py-1 text-xs font-semibold">
               <Star size={14} className="fill-yellow-400 text-yellow-400" />
               {Number(ratingAvg).toFixed(1)}
-              {typeof ratingCount === 'number' && <span className="opacity-80">({ratingCount})</span>}
+              {typeof ratingCount === 'number' && (
+                <span className="opacity-80">({ratingCount})</span>
+              )}
             </div>
           )}
         </div>
@@ -89,8 +101,12 @@ export default function ListingCard({ item = {} }) {
       {/* Body */}
       <div className="p-4 space-y-2">
         <div className="flex items-center justify-between gap-2">
-          <h3 className="font-semibold line-clamp-1">{title}</h3>
-          <span className="badge capitalize">{titleCase(genderPolicy)}</span>
+          <h3 className="font-semibold line-clamp-1 text-slate-800 dark:text-slate-100">
+            {title}
+          </h3>
+          <span className="px-2 py-0.5 rounded-full bg-brand/10 text-[11px] font-medium text-brand capitalize">
+            {titleCase(genderPolicy)}
+          </span>
         </div>
 
         <div className="text-sm text-slate-600 dark:text-slate-300 flex items-center gap-2">
@@ -99,7 +115,9 @@ export default function ListingCard({ item = {} }) {
         </div>
 
         {description && (
-          <p className="text-sm text-slate-700 dark:text-slate-200/90 line-clamp-2">{description}</p>
+          <p className="text-sm text-slate-700 dark:text-slate-200/90 line-clamp-2">
+            {description}
+          </p>
         )}
 
         {amenPreview.length > 0 && (
@@ -115,10 +133,42 @@ export default function ListingCard({ item = {} }) {
           </div>
         )}
 
-        <Link to={detailUrl} className="btn btn-primary w-full mt-2">
-          {isDemo ? `See PGs in ${city || 'this city'}` : 'View details'}
-        </Link>
+        {/* Buttons: View Details + Favorite */}
+        <div className="flex items-center gap-2 mt-2">
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1">
+            <Link
+              to={detailUrl}
+              className="block text-center w-full px-4 py-2 rounded-lg bg-brand text-white text-sm font-medium shadow-sm hover:bg-brand-dark transition-all"
+            >
+              {isDemo ? `See PGs in ${city || 'this city'}` : 'View Details'}
+            </Link>
+          </motion.div>
+
+          {/* ❤️ Tooltip-enabled favorite button */}
+          <Tooltip.Root>
+            <Tooltip.Trigger asChild>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleFavorite}
+                className="p-2 rounded-full bg-brand/10 text-brand hover:bg-brand/20 transition"
+              >
+                <Heart size={18} className="fill-current" />
+              </motion.button>
+            </Tooltip.Trigger>
+
+            <Tooltip.Portal>
+              <Tooltip.Content
+                sideOffset={5}
+                className="bg-gray-800 text-white text-sm px-2 py-1.5 rounded-md shadow-md"
+              >
+                Add to Favorites
+                <Tooltip.Arrow className="fill-gray-800" />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

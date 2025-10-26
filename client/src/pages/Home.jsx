@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { motion } from 'framer-motion'
 
 const ROOMS = [
   {
@@ -38,7 +39,13 @@ export default function Home() {
   }
 
   return (
-    <div className="pb-10">
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+      className="pb-10 bg-background text-slate-800 dark:text-slate-100"
+    >
+
       {/* HERO */}
       <section className="relative overflow-hidden border-b">
         <div
@@ -52,42 +59,80 @@ export default function Home() {
           aria-hidden
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/50 to-transparent" />
-        <div className="relative container-max section">
+
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="relative container-max section"
+        >
           <div className="max-w-2xl text-white space-y-5">
-            <p className="text-sm tracking-wide text-white/80">Experience happiness with</p>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Our PG Accommodations</h1>
+            <p className="text-sm tracking-wide text-white/80">
+              Experience happiness with
+            </p>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+              Our PG Accommodations
+            </h1>
             <p className="text-white/85 max-w-xl">
               Fully-furnished rooms, secure premises and modern amenities — find a place that feels like home.
             </p>
-            <div className="flex flex-wrap gap-3 pt-1">
-              <Link to="/search" className="btn btn-primary">Enquire Now</Link>
-              <a href="#rooms" className="btn">Explore Rooms</a>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <Link
+                  to="/search"
+                  className="px-5 py-2.5 bg-brand text-white rounded-xl shadow-md hover:bg-brand-dark transition-all"
+                >
+                  Enquire Now
+                </Link>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <a href="#rooms" className="px-5 py-2.5 bg-white/10 text-white rounded-xl border border-white/30 hover:bg-white/20 transition-all">
+                  Explore Rooms
+                </a>
+              </motion.div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ROOMS */}
       <section id="rooms" className="container-max section space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl md:text-3xl font-bold">Rooms</h2>
-          <Link to="/search" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">Browse all</Link>
+          <h2 className="text-2xl md:text-3xl font-bold text-brand-dark dark:text-brand-light">Rooms</h2>
+          <Link to="/search" className="text-sm text-brand hover:underline">
+            Browse all
+          </Link>
         </div>
+
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {ROOMS.map(r => (
-            <article key={r.title} className="card overflow-hidden group">
-              <img
+          {ROOMS.map((r, i) => (
+            <motion.article
+              key={r.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              viewport={{ once: true }}
+              className="bg-surface rounded-2xl overflow-hidden shadow-card hover:shadow-lg transition-all"
+            >
+              <motion.img
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: 'spring', stiffness: 200 }}
                 src={r.img}
                 alt={r.title}
-                className="h-48 w-full object-cover transition group-hover:scale-[1.02]"
+                className="h-48 w-full object-cover"
                 loading="lazy"
                 decoding="async"
               />
               <div className="p-4 flex items-center justify-between">
                 <div className="font-semibold">{r.title}</div>
-                <Link to={`/search?roomType=${encodeURIComponent(r.q)}`} className="btn">View</Link>
+                <Link
+                  to={`/search?roomType=${encodeURIComponent(r.q)}`}
+                  className="px-3 py-1.5 text-sm bg-brand text-white rounded-lg hover:bg-brand-dark transition"
+                >
+                  View
+                </Link>
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
       </section>
@@ -101,13 +146,22 @@ export default function Home() {
             { t: 'Hot / Cold Shower', d: 'Temperature control as per your preference.' },
             { t: 'Terrace / Recreation', d: 'Relax on terraces & common lounges.' },
             { t: 'Wardrobe with Locker', d: 'Keep your belongings secure.' },
-          ].map(s => (
-            <div key={s.t} className="card p-6 text-center space-y-3">
-              <div className="mx-auto h-12 w-12 rounded-2xl bg-indigo-600/10" />
-              <div className="font-semibold">{s.t}</div>
+          ].map((s, i) => (
+            <motion.div
+              key={s.t}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              viewport={{ once: true }}
+              className="card p-6 text-center space-y-3 bg-surface shadow-soft hover:shadow-card rounded-2xl transition"
+            >
+              <div className="mx-auto h-12 w-12 rounded-2xl bg-brand/10" />
+              <div className="font-semibold text-brand-dark">{s.t}</div>
               <p className="text-sm text-slate-600 dark:text-slate-300">{s.d}</p>
-              <a href="#contact" className="btn w-full">Enquire Now</a>
-            </div>
+              <a href="#contact" className="px-4 py-2 rounded-lg bg-accent text-white text-sm font-medium hover:bg-amber-500 transition">
+                Enquire Now
+              </a>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -115,16 +169,27 @@ export default function Home() {
       {/* ABOUT */}
       <section id="about" className="container-max section">
         <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="card overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="overflow-hidden rounded-2xl shadow-card"
+          >
             <img
               src="https://images.unsplash.com/photo-1505691723518-36a5ac3b2aa5?q=80&w=1600&auto=format&fit=crop"
               alt="Comfortable PG room"
               className="w-full h-80 object-cover"
-              loading="lazy"
-              decoding="async"
             />
-          </div>
-          <div className="space-y-3">
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="space-y-3"
+          >
             <h2 className="text-2xl md:text-3xl font-bold">About Us</h2>
             <p className="text-slate-600 dark:text-slate-300">
               We provide warm, friendly and affordable PG stays across major cities. Enjoy convenience with modern
@@ -133,7 +198,7 @@ export default function Home() {
             <p className="text-slate-600 dark:text-slate-300">
               Whether you’re a student or a working professional, we make moving-in effortless so you can focus on what matters.
             </p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -142,15 +207,19 @@ export default function Home() {
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Gallery</h2>
         <div className="grid md:grid-cols-3 gap-5">
           {GALLERY.map((src, i) => (
-            <div key={i} className="card overflow-hidden">
+            <motion.div
+              key={i}
+              whileHover={{ scale: 1.03 }}
+              transition={{ type: 'spring', stiffness: 200 }}
+              className="overflow-hidden rounded-2xl shadow-soft hover:shadow-card"
+            >
               <img
                 src={src}
                 alt={`PG gallery ${i + 1}`}
                 className="w-full h-56 md:h-72 object-cover"
                 loading="lazy"
-                decoding="async"
               />
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -159,23 +228,35 @@ export default function Home() {
       <section id="contact" className="container-max section">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Contact Us</h2>
         <div className="grid lg:grid-cols-2 gap-8">
-          <div className="card overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="overflow-hidden rounded-2xl shadow-card"
+          >
             <img
               src="https://images.unsplash.com/photo-1505764706515-aa95265c5abc?q=80&w=1600&auto=format&fit=crop"
               alt="Map"
               className="w-full h-80 object-cover"
-              loading="lazy"
-              decoding="async"
             />
-          </div>
-          <div className="space-y-5">
-            <div className="card p-5 text-sm space-y-2">
-              <div><span className="font-semibold">Address: </span>Palm Court, Malad West, Mumbai 400064</div>
-              <div><span className="font-semibold">Email: </span>hello@pglife.example</div>
-              <div><span className="font-semibold">Phone: </span>+91-88888 88888</div>
-              <div><span className="font-semibold">Timing: </span>Mon – Sun: 10:00 AM – 07:00 PM</div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="space-y-5"
+          >
+            <div className="card p-5 text-sm space-y-2 bg-surface shadow-soft rounded-2xl">
+              <div><span className="font-semibold">Address:</span> Palm Court, Malad West, Mumbai 400064</div>
+              <div><span className="font-semibold">Email:</span> hello@pglife.example</div>
+              <div><span className="font-semibold">Phone:</span> +91-88888 88888</div>
+              <div><span className="font-semibold">Timing:</span> Mon – Sun: 10:00 AM – 07:00 PM</div>
             </div>
-            <form onSubmit={sendEnquiry} className="card p-5 grid gap-3">
+
+            <form onSubmit={sendEnquiry} className="card p-5 grid gap-3 bg-surface shadow-soft rounded-2xl">
               <div className="grid md:grid-cols-2 gap-3">
                 <input className="input" placeholder="Full Name" />
                 <input className="input" placeholder="Mobile Number" />
@@ -183,12 +264,18 @@ export default function Home() {
               <input className="input" placeholder="Email ID" type="email" />
               <textarea className="textarea min-h-[120px]" placeholder="Message" />
               <div className="flex justify-end">
-                <button className="btn btn-primary">Send Enquiry</button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-5 py-2 bg-brand text-white rounded-lg shadow-md hover:bg-brand-dark transition-all"
+                >
+                  Send Enquiry
+                </motion.button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       </section>
-    </div>
+    </motion.div>
   )
 }
