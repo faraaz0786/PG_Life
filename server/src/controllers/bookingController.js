@@ -130,27 +130,23 @@ exports.getOwnerRequests = asyncHandler(async (req, res) => {
  * Owner: accept/decline a booking
  * body: { status: 'accepted' | 'declined' | 'requested' }
  */
-exports.updateBookingStatus = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
+// Update booking status (confirm, cancel, etc.)
+exports.updateBookingStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
 
-  if (!['requested', 'accepted', 'declined'].includes(status)) {
-    return res.status(400).json({ message: 'Invalid status' });
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    booking.status = status || booking.status;
+    await booking.save();
+
+    res.json({ message: 'Status updated successfully', booking });
+  } catch (err) {
+    console.error('Error updating booking status:', err);
+    res.status(500).json({ message: 'Server error while updating status' });
   }
-
-  const booking = await Booking.findById(id);
-  if (!booking) return res.status(404).json({ message: 'Booking not found' });
-
-  const listing = await Listing.findById(booking.listingId);
-  if (!listing) return res.status(404).json({ message: 'Listing not found' });
-
-  // Ensure this booking belongs to one of the owner’s listings
-  if (String(listing.ownerId) !== String(req.user._id)) {
-    return res.status(403).json({ message: 'Not authorized' });
-  }
-
-  booking.status = status;
-  await booking.save();
-
-  res.json({ message: 'Updated', status: booking.status });
-});
+};

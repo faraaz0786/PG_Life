@@ -5,18 +5,40 @@ const {
   getMyBookings,
   getOwnerRequests,
   updateBookingStatus,
+  getBookingById,            // 👈 (optional if needed later)
 } = require('../controllers/bookingController');
 
-// Seeker creates a booking/visit request
+/**
+ * Seeker: create a booking/visit request
+ */
 router.post('/', protect, seekerOnly, createBooking);
 
-// Seeker: my bookings
+/**
+ * Seeker: view my own bookings
+ */
 router.get('/me', protect, seekerOnly, getMyBookings);
 
-// Owner: incoming requests for the owner’s listings
+/**
+ * Owner: view all incoming requests for their listings
+ */
 router.get('/owner', protect, ownerOnly, getOwnerRequests);
 
-// Owner: accept/decline a request (status in body: requested|accepted|declined)
+/**
+ * Owner: update booking status (accept / decline / requested)
+ * existing route for status updates via PUT
+ */
 router.put('/:id', protect, ownerOnly, updateBookingStatus);
+
+/**
+ * ✅ NEW — Universal status update route
+ * Some frontend components call /api/bookings/:id/status (PATCH)
+ * This ensures compatibility with that endpoint.
+ */
+router.patch('/:id/status', protect, ownerOnly, updateBookingStatus);
+
+/**
+ * (Optional) Get single booking detail if required later
+ */
+// router.get('/:id', protect, getBookingById);
 
 module.exports = router;
