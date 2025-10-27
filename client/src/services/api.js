@@ -1,21 +1,23 @@
 // client/src/services/api.js
 import axios from 'axios';
 
-// Normalize base URL from env (Vercel) with a safe local fallback
-const raw = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const baseURL = raw.replace(/\/$/, ''); // strip trailing slash
+// Determine backend base URL — from env or fallback to local dev
+const rawBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const baseURL = rawBase.replace(/\/$/, ''); // remove trailing slash if any
+
+console.log('[API] Base URL →', baseURL); // helpful during debugging
 
 const api = axios.create({
   baseURL,
-  withCredentials: true, // send/receive auth cookies across domains
+  withCredentials: true, // allow sending cookies / auth headers
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  timeout: 20000,
+  timeout: 20000, // prevent hanging requests
 });
 
-// Helper: set/clear Bearer token (optional, cookie is primary)
+// Helper — set or clear bearer token
 export const setAuthToken = (token) => {
   if (token) {
     localStorage.setItem('token', token);
@@ -26,7 +28,7 @@ export const setAuthToken = (token) => {
   }
 };
 
-// Attach token from localStorage on each request (if present)
+// Auto-attach token from localStorage for each request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token && !config.headers.Authorization) {
@@ -35,7 +37,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// If 401, clear any stale token so cookie-only flow can proceed
+// Handle expired / invalid tokens gracefully
 api.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -46,7 +48,7 @@ api.interceptors.response.use(
   }
 );
 
-// Boot with existing token (refresh page, etc.)
+// Boot existing token on reload
 const bootToken = localStorage.getItem('token');
 if (bootToken) {
   api.defaults.headers.common.Authorization = `Bearer ${bootToken}`;
